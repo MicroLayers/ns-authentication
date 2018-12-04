@@ -1,0 +1,11 @@
+authentication:
+  store:
+    type: 'mongo' # 'mongo', 'maria', 'postgres'
+    connectionString: 'mongo:27017'
+    database: 'authentication' # dedicated to the authentication
+  cache:
+    enabled: true
+    type: 'redis' # 'redis' or '' (overwrite enabled: false)
+    connectionString: 'redis:6379' # https://github.com/go-redis/redis
+    username: ''
+    password: ''
