@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:11.1-alpine
     env_file: postgres.env
+    command: postgres -c listen_addresses=*
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -13,16 +14,16 @@ services:
     volumes:
       - mariadb_data:/var/lib/mysql
 
-  redis:
-    image: redis:5.0.2-alpine3.8
-    volumes:
-      - redis_data:/data
-
   mongo:
     image: mongo:4.0.4-xenial
     volumes:
       - mongo_db:/data/db
       - mongo_configdb:/data/configdb
+
+  redis:
+    image: redis:5.0.2-alpine3.8
+    volumes:
+      - redis_data:/data
 
 volumes:
   postgres_data:
