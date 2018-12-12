@@ -18,7 +18,15 @@ services:
     volumes:
       - redis_data:/data
 
+  mongo:
+    image: mongo:4.0.4-xenial
+    volumes:
+      - mongo_db:/data/db
+      - mongo_configdb:/data/configdb
+
 volumes:
   postgres_data:
   mariadb_data:
   redis_data:
+  mongo_db:
+  mongo_configdb:
