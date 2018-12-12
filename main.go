@@ -17,11 +17,11 @@ func echo(data []byte) []byte {
 }
 
 func (m *AuthenticationModule) HandleJSON(data []byte) []byte {
-	return echo(rawConfig, data)
+	return echo(data)
 }
 
 func (m *AuthenticationModule) HandleProto(data []byte) []byte {
-	return echo(rawConfig, data)
+	return echo(data)
 }
 
 func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {

@@ -58,7 +58,7 @@ function runTests {
 		--tty \
 		--volume "${current_directory}/..":"/app" \
 		"${docker_runner_image}" \
-		ls -l /app/scripts
+		bash -c "cd /app && go test ./..."
 }
 
 checkDocker
