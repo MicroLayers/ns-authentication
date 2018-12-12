@@ -7,5 +7,3 @@ authentication:
     enabled: true
     type: 'redis' # 'redis' or '' (overwrite enabled: false)
     connectionString: 'redis:6379' # https://github.com/go-redis/redis
-    username: ''
-    password: ''
