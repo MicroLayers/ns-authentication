@@ -11,21 +11,27 @@ type AuthenticationModule struct {
 	configuration configuration.Configuration
 }
 
-func echo(rawConfig yaml.MapSlice, data []byte) []byte {
-	log.WithField("data", data).Info("")
+func echo(data []byte) []byte {
+	// Dumb
 	return data
 }
 
-func (m *AuthenticationModule) HandleJSON(rawConfig yaml.MapSlice, data []byte) []byte {
+func (m *AuthenticationModule) HandleJSON(data []byte) []byte {
 	return echo(rawConfig, data)
 }
 
-func (m *AuthenticationModule) HandleProto(rawConfig yaml.MapSlice, data []byte) []byte {
+func (m *AuthenticationModule) HandleProto(data []byte) []byte {
 	return echo(rawConfig, data)
 }
 
 func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {
+	config, err := configuration.ReadConfiguration(rawConfig)
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	m.configuration = config
 }
 
 var NetServerModule AuthenticationModule
