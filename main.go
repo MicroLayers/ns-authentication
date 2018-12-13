@@ -5,6 +5,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"ns-auth/configuration"
+	"ns-auth/handler"
 )
 
 type AuthenticationModule struct {
@@ -21,7 +22,7 @@ func (m *AuthenticationModule) HandleJSON(data []byte) []byte {
 }
 
 func (m *AuthenticationModule) HandleProto(data []byte) []byte {
-	return echo(data)
+	return handler.HandleRequest(data)
 }
 
 func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {
