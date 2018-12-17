@@ -9,25 +9,37 @@ import (
 
 // HandleProtoRequest handle
 func HandleProtoRequest(data []byte) []byte {
-	var baseRequest messages.BaseRequest
+	var wrapper messages.RequestWrapper
+	err := proto.Unmarshal(data, &wrapper)
 
-	err := proto.Unmarshal(data, &baseRequest)
+	response := &messages.ResponseWrapper{Ok: true}
 
 	if err != nil {
-		log.WithField("error", err).Error("Received unhandled request")
-		// TODO manage error
-		return data
+		log.WithField("error", err).Error(ErrorUnhandledRequestMessage)
+
+		response.Ok = false
+		response.ErrorCode = ErrorUnhandledRequestCode
+		response.ErrorMessage = ErrorUnhandledRequestMessage
+
+		responseBytes, _ := proto.Marshal(response)
+
+		return responseBytes
 	}
 
-	switch rType := baseRequest.GetRequestType(); rType {
+	switch rType := wrapper.GetRequestType(); rType {
 	case "UsernamePassword":
 		log.WithField("type", rType).Info("Received UsernamePassword authentication request")
-		// TODO handle messages.UsernamePasswordAuthenticationRequest
+		// TODO handle messages.UsernamePasswordRequestPayload
 		break
 	default:
-		log.WithField("type", rType).Warn("Received unhandled request type")
+		log.WithField("type", rType).Warn(ErrorUnknownRequestTypeMessage)
+		response.Ok = false
+		response.ErrorCode = ErrorUnknownRequestTypeCode
+		response.ErrorMessage = ErrorUnknownRequestTypeMessage
+		break
 	}
 
-	// TODO manage return
-	return data
+	responseBytes, _ := proto.Marshal(response)
+
+	return responseBytes
 }

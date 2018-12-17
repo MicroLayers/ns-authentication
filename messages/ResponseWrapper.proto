@@ -1,0 +1,9 @@
+syntax = "proto3";
+package messages;
+
+message ResponseWrapper {
+	bool ok = 1;
+	uint32 errorCode = 2;
+	string errorMessage = 3;
+	bytes payload = 4;
+}
