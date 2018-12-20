@@ -1,0 +1,9 @@
+syntax = "proto3";
+package messages;
+
+message AuthenticationResponse {
+	bool   status = 1;
+	string token = 2;
+	string refreshToken = 3;
+	uint32 expirationDate = 4;
+}

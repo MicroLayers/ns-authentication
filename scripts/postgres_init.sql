@@ -19,8 +19,10 @@ CREATE TABLE IF NOT EXISTS %schema%.authentication_username_password (
 -- bearer token authentication
 CREATE TABLE IF NOT EXISTS %schema%.authentication_tokens (
   user_id UUID PRIMARY KEY REFERENCES users.id,
+  auth_type TEXT NOT NULL,
   token TEXT NOT NULL,
   refresh_token TEXT,
   created_at TIMESTAMP NOT NULL,
+  create_ip INET NOT NULL,
   expiration_date TIMESTAMP
 )
