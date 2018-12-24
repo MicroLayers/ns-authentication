@@ -22,7 +22,7 @@ func (m *AuthenticationModule) HandleJSON(data []byte) []byte {
 }
 
 func (m *AuthenticationModule) HandleProto(data []byte) []byte {
-	return handler.HandleRequest(data)
+	return handler.HandleProtoRequest(data)
 }
 
 func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {

@@ -11,3 +11,6 @@ const ErrorUnknownRequestTypeCode = uint32(3001)
 
 // ErrorUnknownRequestMessage unknown request type received
 const ErrorUnknownRequestTypeMessage = "Unknown request type received"
+
+const ErrorPayloadUnmarshalCode = uint32(3002)
+const ErrorPayloadUnmarshalMessage = "Unable to parse the request's payload"
