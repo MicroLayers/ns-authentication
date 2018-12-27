@@ -7,10 +7,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// ProtoHandler Protobuf handler
 type ProtoHandler struct {
 	UsernamePasswordHandler *UsernamePasswordProtoHandler
 }
 
+// NewProtoHandler ProtoHandler's instantiator used by wire
 func NewProtoHandler(
 	usernamePasswordHandler *UsernamePasswordProtoHandler,
 ) *ProtoHandler {
@@ -19,6 +21,7 @@ func NewProtoHandler(
 	}
 }
 
+// HandleRequest handle the proto requests
 func (h *ProtoHandler) HandleRequest(data []byte) []byte {
 	wrapper := &messages.RequestWrapper{}
 	err := proto.Unmarshal(data, wrapper)
@@ -26,20 +29,21 @@ func (h *ProtoHandler) HandleRequest(data []byte) []byte {
 	response := &messages.ResponseWrapper{Ok: true}
 
 	if err != nil {
-		log.WithField("error", err).Error(ErrorUnhandledRequestMessage)
-
-		decorateErrorResponse(response, ErrorUnhandledRequestCode, ErrorUnhandledRequestMessage)
+		logAndDecorateNegativeResponse(response, ErrorUnhandledRequestCode, ErrorUnhandledRequestMessage, err)
 		bytes, _ := proto.Marshal(response)
 
 		return bytes
 	}
 
 	switch rType := wrapper.GetRequestType(); rType {
-	case "UsernamePassword":
+	case "UsernamePasswordAuthentication":
 		log.WithField("type", rType).Info("Received UsernamePassword authentication request")
 
-		h.UsernamePasswordHandler.HandleRequest(wrapper, response)
+		h.UsernamePasswordHandler.HandleAuthenticationRequest(wrapper, response)
 		break
+	case "UsernamePasswordAddUser":
+		log.WithField("type", rType).Info("Received UsernamePassword add user request")
+		h.UsernamePasswordHandler.HandleAddUserRequest(wrapper, response)
 	default:
 		log.WithField("type", rType).Warn(ErrorUnknownRequestTypeMessage)
 		response.Ok = false
@@ -53,12 +57,26 @@ func (h *ProtoHandler) HandleRequest(data []byte) []byte {
 	return responseBytes
 }
 
-func decorateErrorResponse(
+func logAndDecorateNegativeResponse(
 	response *messages.ResponseWrapper,
 	errorCode uint32,
 	errorMessage string,
+	err error,
 ) {
+	log.WithField("error", err).Error(ErrorPayloadUnmarshalMessage)
+
 	response.Ok = false
 	response.ErrorCode = errorCode
 	response.ErrorMessage = errorMessage
+}
+
+func logAndDecoratePositiveResponse(
+	response *messages.ResponseWrapper,
+	payload []byte,
+	messageToLog string,
+) {
+	log.Info(messageToLog)
+
+	response.Ok = true
+	response.Payload = payload
 }

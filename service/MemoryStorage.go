@@ -28,6 +28,7 @@ type tokenMemoryStorage struct {
 	store  *userDefinitionList
 }
 
+// NewMemoryStorage MemoryStorage's instantiator, used by wire
 func NewMemoryStorage(hasher storage.Hasher) *storage.Storage {
 	commonStore := &userDefinitionList{}
 
@@ -58,19 +59,19 @@ func (s *usernamePasswordMemoryStorage) AddUser(
 		}
 	}
 
-	expiration := time.Now().Add(time.Hour).Unix()
+	expiryDate := time.Now().Add(time.Hour).Unix() // One hour expiration
 
 	newDef := userDefinition{
 		HashedPassword: s.hasher.HashPassword(username, domain, password),
 		User: &storage.User{
-			Id:       uuid.New().String(),
+			ID:       uuid.New().String(),
 			Username: username,
 			Domain:   domain,
 		},
 		AuthToken: &storage.AuthToken{
-			Token:          uuid.New().String(),
-			RefreshToken:   uuid.New().String(),
-			ExpirationDate: uint32(expiration),
+			Token:        uuid.New().String(),
+			RefreshToken: uuid.New().String(),
+			ExpiryDate:   expiryDate,
 		},
 	}
 	*s.store = append(*s.store, newDef)
@@ -83,13 +84,16 @@ func (s *usernamePasswordMemoryStorage) FindUser(
 	domain string,
 	password string,
 ) (*storage.User, error) {
+	nowEpoch := time.Now().Unix()
+
 	for _, definition := range *s.store {
-		if s.hasher.CheckPassword(username, domain, password, definition.HashedPassword) {
+		if s.hasher.CheckPassword(username, domain, password, definition.HashedPassword) &&
+			nowEpoch <= definition.AuthToken.ExpiryDate {
 			return definition.User, nil
 		}
 	}
 
-	return nil, errors.New("User not found!")
+	return nil, errors.New("user not found")
 }
 
 func (s *tokenMemoryStorage) FindOrCreateTokenFromUser(
@@ -98,12 +102,15 @@ func (s *tokenMemoryStorage) FindOrCreateTokenFromUser(
 ) (*storage.AuthToken, error) {
 	// ignore authType for this storage type
 	for _, definition := range *s.store {
-		if definition.User.Id == user.Id {
-			return definition.AuthToken, nil
+		if definition.User.ID == user.ID {
+			token := definition.AuthToken
+			token.RefreshToken = "" // not a new token, do not send the refresh one
+
+			return token, nil
 		}
 	}
 
-	return nil, errors.New("User not found!")
+	return nil, errors.New("user not found")
 }
 
 func (s *tokenMemoryStorage) FindUserFromToken(token string) (*storage.User, error) {
@@ -113,5 +120,5 @@ func (s *tokenMemoryStorage) FindUserFromToken(token string) (*storage.User, err
 		}
 	}
 
-	return nil, errors.New("User not found!")
+	return nil, errors.New("user not found")
 }

@@ -22,7 +22,7 @@ func TestMemoryStorage_UsernamePassword_AddUser(t *testing.T) {
 	user, err := service.UsernamePassword.AddUser(username, domain, password)
 
 	assert.NoError(t, err)
-	assert.NotEqual(t, "", user.Id)
+	assert.NotEqual(t, "", user.ID)
 	assert.Equal(t, username, user.Username)
 	assert.Equal(t, domain, user.Domain)
 }
@@ -42,7 +42,7 @@ func TestMemoryStorage_UsernamePassword_FindUser(t *testing.T) {
 
 	user, err := service.UsernamePassword.FindUser(username, domain, password)
 	assert.NoError(t, err)
-	assert.Equal(t, createdUser.Id, user.Id)
+	assert.Equal(t, createdUser.ID, user.ID)
 	assert.Equal(t, username, user.Username)
 	assert.Equal(t, domain, user.Domain)
 }
@@ -60,14 +60,14 @@ func TestMemoryStorage_Token_FindOrCreateTokenFromUser_and_FindUserFromToken(t *
 	user, err := service.UsernamePassword.AddUser(username, domain, password)
 	assert.NoError(t, err)
 
-	authToken, err := service.Token.FindOrCreateTokenFromUser(user, storage.AUTH_TYPE_USERNAME_PASSWORD)
+	authToken, err := service.Token.FindOrCreateTokenFromUser(user, storage.AuthTypeUsernamePassword)
 	assert.NoError(t, err)
 	assert.NotNil(t, authToken)
 	assert.NotEqual(t, "", authToken.Token)
-	assert.NotEqual(t, "", authToken.RefreshToken)
-	assert.NotEqual(t, 0, authToken.ExpirationDate)
+	assert.Equal(t, "", authToken.RefreshToken)
+	assert.NotEqual(t, 0, authToken.ExpiryDate)
 
 	foundUser, err := service.Token.FindUserFromToken(authToken.Token)
 	assert.NoError(t, err)
-	assert.Equal(t, user.Id, foundUser.Id)
+	assert.Equal(t, user.ID, foundUser.ID)
 }

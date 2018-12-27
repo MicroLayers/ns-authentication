@@ -4,6 +4,7 @@ package handler
 
 import (
 	"ns-auth/configuration"
+	"ns-auth/service"
 
 	"github.com/google/wire"
 )
@@ -15,6 +16,7 @@ func GetProtoHandler(
 	wire.Build(
 		NewProtoHandler,
 		NewUsernamePasswordProtoHandler,
+		service.GetUsernamePasswordAuthentication,
 	)
 
 	return &ProtoHandler{}

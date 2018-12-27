@@ -1,6 +1,7 @@
 package storage
 
-const AUTH_TYPE_USERNAME_PASSWORD = "username_password"
+// AuthTypeUsernamePassword authentication type username/password
+const AuthTypeUsernamePassword = "username_password"
 
 // Storage authentication storage struct
 type Storage struct {
@@ -28,13 +29,14 @@ type Hasher interface {
 
 // User definition of a user
 type User struct {
-	Id       string
+	ID       string
 	Username string
 	Domain   string
 }
 
+// AuthToken an authorization token
 type AuthToken struct {
-	Token          string
-	RefreshToken   string
-	ExpirationDate uint32
+	Token        string
+	RefreshToken string
+	ExpiryDate   int64
 }

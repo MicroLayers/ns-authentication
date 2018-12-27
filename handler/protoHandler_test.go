@@ -1,6 +1,7 @@
 package handler_test
 
 import (
+	"ns-auth/configuration"
 	"ns-auth/handler"
 	"ns-auth/messages"
 	"testing"
@@ -9,8 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func getMemoryConfiguration() *configuration.Configuration {
+	config := &configuration.Configuration{}
+	config.Authentication.Store.Type = "memory"
+
+	return config
+}
+
 func TestHandleProto_UnknownRequestType(t *testing.T) {
-	protoHandler := handler.NewProtoHandler(&handler.UsernamePasswordProtoHandler{})
+	t.Parallel()
+
+	protoHandler := handler.GetProtoHandler(getMemoryConfiguration())
 
 	message := &messages.RequestWrapper{
 		RequestType: "Unknown type",

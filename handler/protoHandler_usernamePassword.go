@@ -1,31 +1,146 @@
 package handler
 
 import (
+	"fmt"
 	"ns-auth/messages"
+	"ns-auth/service"
 
 	"github.com/golang/protobuf/proto"
-	log "github.com/sirupsen/logrus"
 )
 
-type UsernamePasswordProtoHandler struct{}
-
-func NewUsernamePasswordProtoHandler() *UsernamePasswordProtoHandler {
-	return &UsernamePasswordProtoHandler{}
+// UsernamePasswordProtoHandler the Protobuf handler used to manage username/password related requests
+type UsernamePasswordProtoHandler struct {
+	usernamePasswordService *service.UsernamePasswordAuthentication
 }
 
-func (h *UsernamePasswordProtoHandler) HandleRequest(
+// NewUsernamePasswordProtoHandler UsernamePasswordProtoHandler's instantiator used by wire
+func NewUsernamePasswordProtoHandler(
+	usernamePasswordService *service.UsernamePasswordAuthentication,
+) *UsernamePasswordProtoHandler {
+	return &UsernamePasswordProtoHandler{
+		usernamePasswordService: usernamePasswordService,
+	}
+}
+
+// HandleAuthenticationRequest handle the authentication request
+func (h *UsernamePasswordProtoHandler) HandleAuthenticationRequest(
 	wrapper *messages.RequestWrapper,
 	response *messages.ResponseWrapper,
 ) {
-	var payload messages.UsernamePasswordRequestPayload
+	var payload messages.UsernamePasswordLoginRequestPayload
 	err := proto.Unmarshal(wrapper.GetPayload(), &payload)
 
 	if err != nil {
-		log.WithField("error", err).Error(ErrorPayloadUnmarshalMessage)
-		decorateErrorResponse(response, ErrorPayloadUnmarshalCode, ErrorPayloadUnmarshalMessage)
+		logAndDecorateNegativeResponse(
+			response,
+			ErrorPayloadUnmarshalCode,
+			ErrorPayloadUnmarshalMessage,
+			err,
+		)
+
+		return
 	}
 
-	// TODO handle messages.UsernamePasswordRequestPayload
+	username := payload.GetUsername()
+	password := payload.GetPassword()
+	domain := payload.GetDomain()
 
-	response.Ok = true
+	token, err := h.usernamePasswordService.GetAuthToken(
+		username,
+		password,
+		domain,
+	)
+	if err != nil {
+		logAndDecorateNegativeResponse(
+			response,
+			ErrorInvalidCredentialsCode,
+			ErrorInvalidCredentialsMessage,
+			err,
+		)
+
+		return
+	}
+
+	responsePayload := &messages.AuthenticationResponse{
+		AuthToken:    token.Token,
+		RefreshToken: token.RefreshToken,
+		ExpiryDate:   token.ExpiryDate,
+	}
+
+	responsePayloadBytes, err := proto.Marshal(responsePayload)
+	if err != nil {
+		logAndDecorateNegativeResponse(
+			response,
+			ErrorUnableToGenerateResponsePayloadCode,
+			ErrorUnableToGenerateResponsePayloadMessage,
+			err,
+		)
+
+		return
+	}
+
+	logAndDecoratePositiveResponse(
+		response,
+		responsePayloadBytes,
+		fmt.Sprintf("Succesfully authenticated user %s - %s", domain, password),
+	)
+}
+
+// HandleAddUserRequest handle the add user request
+func (h *UsernamePasswordProtoHandler) HandleAddUserRequest(
+	wrapper *messages.RequestWrapper,
+	response *messages.ResponseWrapper,
+) {
+	var payload messages.UsernamePasswordAddUserRequestPayload
+	err := proto.Unmarshal(wrapper.GetPayload(), &payload)
+
+	if err != nil {
+		logAndDecorateNegativeResponse(
+			response,
+			ErrorPayloadUnmarshalCode,
+			ErrorPayloadUnmarshalMessage,
+			err,
+		)
+
+		return
+	}
+
+	user, err := h.usernamePasswordService.AddUser(
+		payload.GetUsername(),
+		payload.GetPassword(),
+		payload.GetDomain(),
+	)
+
+	if err != nil {
+		logAndDecorateNegativeResponse(
+			response,
+			ErrorUnableToCreateNewUserCode,
+			ErrorUnableToCreateNewUserMessage,
+			err,
+		)
+
+		return
+	}
+
+	responsePayload := &messages.UserCreationResponsePayload{
+		ID: user.ID,
+	}
+
+	responsePayloadBytes, err := proto.Marshal(responsePayload)
+	if err != nil {
+		logAndDecorateNegativeResponse(
+			response,
+			ErrorUnableToGenerateResponsePayloadCode,
+			ErrorUnableToGenerateResponsePayloadMessage,
+			err,
+		)
+
+		return
+	}
+
+	logAndDecoratePositiveResponse(
+		response,
+		responsePayloadBytes,
+		fmt.Sprintf("Created user %s - %s", user.Domain, user.Username),
+	)
 }

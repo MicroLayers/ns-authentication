@@ -8,5 +8,7 @@ import (
 
 func TestMain(m *testing.M) {
 	// Prevent log spam, enabling debug messages only
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.PanicLevel)
+
+	m.Run()
 }

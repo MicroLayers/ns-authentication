@@ -7,12 +7,14 @@ package handler
 
 import (
 	"ns-auth/configuration"
+	"ns-auth/service"
 )
 
 // Injectors from wire.go:
 
 func GetProtoHandler(config *configuration.Configuration) *ProtoHandler {
-	usernamePasswordProtoHandler := NewUsernamePasswordProtoHandler()
+	usernamePasswordAuthentication := service.GetUsernamePasswordAuthentication(config)
+	usernamePasswordProtoHandler := NewUsernamePasswordProtoHandler(usernamePasswordAuthentication)
 	protoHandler := NewProtoHandler(usernamePasswordProtoHandler)
 	return protoHandler
 }

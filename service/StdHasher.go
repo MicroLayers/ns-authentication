@@ -8,12 +8,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// StdHasher standard hasher
 type StdHasher struct {
 	salt HasherSalt
 }
 
+// HasherSalt string type used to discriminate in wire
 type HasherSalt string
 
+// NewStdHasher StdHasher's instantiator, used by wire
 func NewStdHasher(salt HasherSalt) storage.Hasher {
 	return &StdHasher{salt: salt}
 }
@@ -25,6 +28,7 @@ func buildSecret(username string, domain string, password string, salt HasherSal
 	return hash
 }
 
+// HashPassword hash the password to store it in the database
 func (h *StdHasher) HashPassword(username string, domain string, password string) string {
 	salt := buildSecret(username, domain, password, h.salt)
 	bytes, _ := bcrypt.GenerateFromPassword(salt[:], 14)
@@ -32,6 +36,7 @@ func (h *StdHasher) HashPassword(username string, domain string, password string
 	return string(bytes)
 }
 
+// CheckPassword verify the credentials against the given stored password
 func (h *StdHasher) CheckPassword(
 	username string,
 	domain string,

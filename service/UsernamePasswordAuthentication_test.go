@@ -29,7 +29,7 @@ func TestUsernamePasswordAuthentication_AddUser(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, username, user.Username)
 	assert.Equal(t, domain, user.Domain)
-	assert.NotEmpty(t, user.Id)
+	assert.NotEmpty(t, user.ID)
 }
 
 func TestUsernamePasswordAuthentication_GetAuthToken(t *testing.T) {
@@ -48,6 +48,6 @@ func TestUsernamePasswordAuthentication_GetAuthToken(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotEmpty(t, token.Token)
-	assert.NotEmpty(t, token.RefreshToken)
-	assert.NotEqual(t, uint32(0), token.ExpirationDate)
+	assert.Empty(t, token.RefreshToken)
+	assert.NotEqual(t, int64(0), token.ExpiryDate)
 }
