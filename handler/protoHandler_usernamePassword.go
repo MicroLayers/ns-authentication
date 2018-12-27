@@ -7,7 +7,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func handleUsernamePasswordRequest(
+type UsernamePasswordProtoHandler struct{}
+
+func NewUsernamePasswordProtoHandler() *UsernamePasswordProtoHandler {
+	return &UsernamePasswordProtoHandler{}
+}
+
+func (h *UsernamePasswordProtoHandler) HandleRequest(
 	wrapper *messages.RequestWrapper,
 	response *messages.ResponseWrapper,
 ) {

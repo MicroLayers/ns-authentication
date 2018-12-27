@@ -10,17 +10,20 @@ type Storage struct {
 
 // UsernamePasswordStorage username/password storage interface
 type UsernamePasswordStorage interface {
-	FindUser(username string, hashedPassword string, domain string) (User, error)
+	AddUser(username string, domain string, password string) (*User, error)
+	FindUser(username string, domain string, password string) (*User, error)
 }
 
 // TokenStorage token storage interface
 type TokenStorage interface {
-	FindOrCreate(user User, authType string) (AuthToken, error)
+	FindOrCreateTokenFromUser(user *User, authType string) (*AuthToken, error)
+	FindUserFromToken(token string) (*User, error)
 }
 
 // Hasher dedicated hashing interface
 type Hasher interface {
-	HashPassword(username string, password string, domain string) string
+	HashPassword(username string, domain string, password string) string
+	CheckPassword(username string, domain string, password string, storedPassword string) bool
 }
 
 // User definition of a user

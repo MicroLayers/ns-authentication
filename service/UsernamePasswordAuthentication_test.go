@@ -1,96 +1,53 @@
 package service_test
 
 import (
-	"errors"
+	"ns-auth/configuration"
 	"ns-auth/service"
-	"ns-auth/storage"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
-type hasherConcat struct{}
+func getMemoryUsernamePasswordAuth() *service.UsernamePasswordAuthentication {
+	config := &configuration.Configuration{}
+	config.Authentication.Store.Type = "memory"
 
-func (h *hasherConcat) HashPassword(username string, password string, domain string) string {
-	return username + password + domain
+	return service.GetUsernamePasswordAuthentication(config)
 }
 
-type usernamePasswordStorage struct {
-	ExpectedUsername string
-	ExpectedPassword string
-	ExpectedDomain   string
-	ExpectedUserId   string
+func TestUsernamePasswordAuthentication_AddUser(t *testing.T) {
+	t.Parallel()
+
+	username := uuid.New().String()
+	password := uuid.New().String()
+	domain := uuid.New().String()
+
+	service := getMemoryUsernamePasswordAuth()
+
+	user, err := service.AddUser(username, password, domain)
+	assert.NoError(t, err)
+	assert.Equal(t, username, user.Username)
+	assert.Equal(t, domain, user.Domain)
+	assert.NotEmpty(t, user.Id)
 }
 
-func (ups *usernamePasswordStorage) FindUser(username string, password string, domain string) (storage.User, error) {
-	sameUsername := ups.ExpectedUsername == username
-	samePassword := ups.ExpectedPassword == password
-	sameDomain := ups.ExpectedDomain == domain
-	if sameUsername && samePassword && sameDomain {
-		return storage.User{
-			Id:       ups.ExpectedUserId,
-			Username: username,
-			Domain:   domain,
-		}, nil
-	}
+func TestUsernamePasswordAuthentication_GetAuthToken(t *testing.T) {
+	t.Parallel()
 
-	return storage.User{}, errors.New("")
-}
+	username := uuid.New().String()
+	password := uuid.New().String()
+	domain := uuid.New().String()
 
-type tokenStorage struct {
-	ExpectedUserId         string
-	ExpectedToken          string
-	ExpectedRefreshToken   string
-	ExpectedExpirationDate uint32
-}
+	service := getMemoryUsernamePasswordAuth()
 
-func (ts *tokenStorage) FindOrCreate(user storage.User, authType string) (storage.AuthToken, error) {
-	if user.Id == ts.ExpectedUserId && authType == storage.AUTH_TYPE_USERNAME_PASSWORD {
-		return storage.AuthToken{
-			Token:          ts.ExpectedToken,
-			RefreshToken:   ts.ExpectedRefreshToken,
-			ExpirationDate: ts.ExpectedExpirationDate,
-		}, nil
-	}
-
-	return storage.AuthToken{}, errors.New("")
-}
-
-func TestGetAuthToken(t *testing.T) {
-	username := "username"
-	password := "password"
-	domain := "domain"
-
-	expectedUserId := "whatever_user"
-	expectedToken := "0123456789abcdef"
-	expectedRefreshToken := "fedcba9876543210"
-	expectedExpirationDate := uint32(1234567)
-
-	hasher := hasherConcat{}
-	storage := storage.Storage{
-		UsernamePassword: &usernamePasswordStorage{
-			ExpectedUserId:   expectedUserId,
-			ExpectedUsername: username,
-			ExpectedPassword: hasher.HashPassword(username, password, domain),
-			ExpectedDomain:   domain,
-		},
-		Token: &tokenStorage{
-			ExpectedUserId:         expectedUserId,
-			ExpectedToken:          expectedToken,
-			ExpectedRefreshToken:   expectedRefreshToken,
-			ExpectedExpirationDate: expectedExpirationDate,
-		},
-	}
-
-	service := service.UsernamePasswordAuthentication{
-		Hasher:  &hasher,
-		Storage: storage,
-	}
+	_, err := service.AddUser(username, password, domain)
+	assert.NoError(t, err)
 
 	token, err := service.GetAuthToken(username, password, domain)
 
 	assert.NoError(t, err)
-	assert.Equal(t, expectedToken, token.Token)
-	assert.Equal(t, expectedRefreshToken, token.RefreshToken)
-	assert.Equal(t, expectedExpirationDate, token.ExpirationDate)
+	assert.NotEmpty(t, token.Token)
+	assert.NotEmpty(t, token.RefreshToken)
+	assert.NotEqual(t, uint32(0), token.ExpirationDate)
 }

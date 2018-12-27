@@ -1,8 +1,11 @@
 authentication:
+  hasher:
+    type: 'standard' # 'standard', if custom is built add it to the switch in service/wire.go and rebuild it
+    salt: 'change_me_please'
   store:
-    type: 'mongo' # 'mongo', 'maria', 'postgres'
+    type: 'mongo' # 'mongo', 'maria', 'postgres', 'memory'
     connectionString: 'mongo:27017'
-    database: 'authentication' # dedicated to the authentication
+    database: 'authentication' # database name, dedicated to the authentication
   cache:
     enabled: true
     type: 'redis' # 'redis' or '' (overwrite enabled: false)

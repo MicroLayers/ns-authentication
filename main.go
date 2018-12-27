@@ -10,6 +10,7 @@ import (
 
 type AuthenticationModule struct {
 	configuration configuration.Configuration
+	protoHandler  *handler.ProtoHandler
 }
 
 func echo(data []byte) []byte {
@@ -22,7 +23,7 @@ func (m *AuthenticationModule) HandleJSON(data []byte) []byte {
 }
 
 func (m *AuthenticationModule) HandleProto(data []byte) []byte {
-	return handler.HandleProtoRequest(data)
+	return m.protoHandler.HandleRequest(data)
 }
 
 func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {
@@ -33,6 +34,7 @@ func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {
 	}
 
 	m.configuration = config
+	m.protoHandler = handler.GetProtoHandler(&m.configuration)
 }
 
 var NetServerModule AuthenticationModule

@@ -7,8 +7,19 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// HandleProtoRequest handle
-func HandleProtoRequest(data []byte) []byte {
+type ProtoHandler struct {
+	UsernamePasswordHandler *UsernamePasswordProtoHandler
+}
+
+func NewProtoHandler(
+	usernamePasswordHandler *UsernamePasswordProtoHandler,
+) *ProtoHandler {
+	return &ProtoHandler{
+		UsernamePasswordHandler: usernamePasswordHandler,
+	}
+}
+
+func (h *ProtoHandler) HandleRequest(data []byte) []byte {
 	wrapper := &messages.RequestWrapper{}
 	err := proto.Unmarshal(data, wrapper)
 
@@ -27,7 +38,7 @@ func HandleProtoRequest(data []byte) []byte {
 	case "UsernamePassword":
 		log.WithField("type", rType).Info("Received UsernamePassword authentication request")
 
-		handleUsernamePasswordRequest(wrapper, response)
+		h.UsernamePasswordHandler.HandleRequest(wrapper, response)
 		break
 	default:
 		log.WithField("type", rType).Warn(ErrorUnknownRequestTypeMessage)

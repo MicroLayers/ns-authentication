@@ -10,6 +10,8 @@ import (
 )
 
 func TestHandleProto_UnknownRequestType(t *testing.T) {
+	protoHandler := handler.NewProtoHandler(&handler.UsernamePasswordProtoHandler{})
+
 	message := &messages.RequestWrapper{
 		RequestType: "Unknown type",
 	}
@@ -17,7 +19,7 @@ func TestHandleProto_UnknownRequestType(t *testing.T) {
 	buffer, err := proto.Marshal(message)
 	assert.NoError(t, err)
 
-	response := handler.HandleProtoRequest(buffer)
+	response := protoHandler.HandleRequest(buffer)
 
 	var data messages.ResponseWrapper
 	err = proto.Unmarshal(response, &data)

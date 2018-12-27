@@ -10,6 +10,8 @@ import (
 )
 
 func TestHandleProto_UsernamePasswordRequest_right_payload(t *testing.T) {
+	protoHandler := handler.NewProtoHandler(&handler.UsernamePasswordProtoHandler{})
+
 	payload := &messages.UsernamePasswordRequestPayload{
 		Username: "Username",
 		Password: "Password",
@@ -26,7 +28,7 @@ func TestHandleProto_UsernamePasswordRequest_right_payload(t *testing.T) {
 	buffer, err := proto.Marshal(message)
 	assert.NoError(t, err)
 
-	response := handler.HandleProtoRequest(buffer)
+	response := protoHandler.HandleRequest(buffer)
 
 	var data messages.ResponseWrapper
 	err = proto.Unmarshal(response, &data)
@@ -35,6 +37,8 @@ func TestHandleProto_UsernamePasswordRequest_right_payload(t *testing.T) {
 }
 
 func TestHandleProto_UsernamePasswordRequest_wrong_payload(t *testing.T) {
+	protoHandler := handler.NewProtoHandler(&handler.UsernamePasswordProtoHandler{})
+
 	payloadBytes := []byte("some random bytes here")
 
 	message := &messages.RequestWrapper{
@@ -45,7 +49,7 @@ func TestHandleProto_UsernamePasswordRequest_wrong_payload(t *testing.T) {
 	buffer, err := proto.Marshal(message)
 	assert.NoError(t, err)
 
-	response := handler.HandleProtoRequest(buffer)
+	response := protoHandler.HandleRequest(buffer)
 
 	var data messages.ResponseWrapper
 	err = proto.Unmarshal(response, &data)

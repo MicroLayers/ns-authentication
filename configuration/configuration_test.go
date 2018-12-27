@@ -11,8 +11,13 @@ import (
 )
 
 func TestParseConfiguration(t *testing.T) {
+	t.Parallel()
+
 	configYaml := `
 authentication:
+  hasher:
+    type: 'standard'
+    salt: 'zulucharlietango'
   store:
     type: 'mongo'
     connectionString: 'mongo:27017'
@@ -24,11 +29,14 @@ authentication:
 `
 	bytes := []byte(configYaml)
 	var mapSlice yaml.MapSlice
-	yaml.Unmarshal(bytes, &mapSlice)
+	err := yaml.Unmarshal(bytes, &mapSlice)
+	assert.NoError(t, err)
 
 	config, err := configuration.ReadConfiguration(mapSlice)
 
 	assert.NoError(t, err)
+	assert.Equal(t, "standard", config.Authentication.Hasher.Type)
+	assert.Equal(t, "zulucharlietango", config.Authentication.Hasher.Salt)
 	assert.Equal(t, "mongo", config.Authentication.Store.Type)
 	assert.Equal(t, "mongo:27017", config.Authentication.Store.ConnectionString)
 	assert.Equal(t, "authentication", config.Authentication.Store.Database)

@@ -6,6 +6,10 @@ import (
 
 type Configuration struct {
 	Authentication struct {
+		Hasher struct {
+			Type string `yaml:"type"`
+			Salt string `yaml:"salt"`
+		} `yaml:"hasher"`
 		Store struct {
 			Type             string `yaml:"type"`
 			ConnectionString string `yaml:"connectionString"`
