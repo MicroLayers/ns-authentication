@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func createUser(
+func createUserWithPasswordViaRequest(
 	t *testing.T,
 	protoHandler *handler.ProtoHandler,
 	username string,
@@ -56,7 +56,7 @@ func TestHandleProto_UsernamePasswordProtoHandler_HandleAuthenticationRequest_wi
 
 	protoHandler := handler.GetProtoHandler(getMemoryConfiguration())
 
-	createUser(t, protoHandler, username, password, domain, true)
+	createUserWithPasswordViaRequest(t, protoHandler, username, password, domain, true)
 
 	payload := &messages.UsernamePasswordLoginRequestPayload{
 		Username: username,
@@ -115,6 +115,6 @@ func TestHandleProto_UsernamePasswordProtoHandler_HandleAddUserRequest_shouldCor
 
 	protoHandler := handler.GetProtoHandler(getMemoryConfiguration())
 
-	createUser(t, protoHandler, username, password, domain, true)
-	createUser(t, protoHandler, username, password, domain, false)
+	createUserWithPasswordViaRequest(t, protoHandler, username, password, domain, true)
+	createUserWithPasswordViaRequest(t, protoHandler, username, password, domain, false)
 }

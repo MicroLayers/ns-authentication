@@ -7,17 +7,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const RequestTypeTokenDiscover string = "TokenDiscover"
+const RequestTypeUsernamePasswordAuthentication string = "UsernamePasswordAuthentication"
+const RequestTypeUsernamePasswordAddUser string = "UsernamePasswordAddUser"
+
 // ProtoHandler Protobuf handler
 type ProtoHandler struct {
 	UsernamePasswordHandler *UsernamePasswordProtoHandler
+	TokenHandler            *TokenProtoHandler
 }
 
 // NewProtoHandler ProtoHandler's instantiator used by wire
 func NewProtoHandler(
 	usernamePasswordHandler *UsernamePasswordProtoHandler,
+	tokenHandler *TokenProtoHandler,
 ) *ProtoHandler {
 	return &ProtoHandler{
 		UsernamePasswordHandler: usernamePasswordHandler,
+		TokenHandler:            tokenHandler,
 	}
 }
 
@@ -36,14 +43,17 @@ func (h *ProtoHandler) HandleRequest(data []byte) []byte {
 	}
 
 	switch rType := wrapper.GetRequestType(); rType {
-	case "UsernamePasswordAuthentication":
+	case RequestTypeUsernamePasswordAuthentication:
 		log.WithField("type", rType).Info("Received UsernamePassword authentication request")
 
 		h.UsernamePasswordHandler.HandleAuthenticationRequest(wrapper, response)
 		break
-	case "UsernamePasswordAddUser":
+	case RequestTypeUsernamePasswordAddUser:
 		log.WithField("type", rType).Info("Received UsernamePassword add user request")
 		h.UsernamePasswordHandler.HandleAddUserRequest(wrapper, response)
+	case RequestTypeTokenDiscover:
+		log.WithField("type", rType).Info("Received TokenDiscover request")
+		h.TokenHandler.HandleTokenDiscoverRequest(wrapper, response)
 	default:
 		log.WithField("type", rType).Warn(ErrorUnknownRequestTypeMessage)
 		response.Ok = false
@@ -55,6 +65,27 @@ func (h *ProtoHandler) HandleRequest(data []byte) []byte {
 	responseBytes, _ := proto.Marshal(response)
 
 	return responseBytes
+}
+
+func unmarshalPayloadOrError(
+	response *messages.ResponseWrapper,
+	wrapper *messages.RequestWrapper,
+	dest proto.Message,
+) error {
+	err := proto.Unmarshal(wrapper.GetPayload(), dest)
+
+	if err != nil {
+		logAndDecorateNegativeResponse(
+			response,
+			ErrorPayloadUnmarshalCode,
+			ErrorPayloadUnmarshalMessage,
+			err,
+		)
+
+		return err
+	}
+
+	return nil
 }
 
 func logAndDecorateNegativeResponse(

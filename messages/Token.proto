@@ -1,0 +1,13 @@
+syntax = "proto3";
+package messages;
+
+message TokenDiscoverRequestPayload {
+	string token = 1;
+	string domain = 2;
+}
+
+message TokenDiscoverResponsePayload {
+	string userID = 1;
+	string username = 2;
+	string domain   = 3;
+}

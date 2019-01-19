@@ -9,21 +9,34 @@ import (
 	"github.com/google/wire"
 )
 
-func _injectorStorage(
+var storageInstance *storage.Storage
+
+func GetStorage(
 	config *configuration.Configuration,
 	hasher storage.Hasher,
 ) *storage.Storage {
-	switch config.Authentication.Store.Type {
-	case "memory":
-	default:
-		return NewMemoryStorage(hasher)
+	if storageInstance != nil {
+		return storageInstance
 	}
 
-	// wire workaround
-	return NewMemoryStorage(hasher)
+	var instance *storage.Storage
+
+	switch config.Authentication.Store.Type {
+	case "memory":
+		instance = NewMemoryStorage(hasher)
+	default:
+		instance = NewMemoryStorage(hasher)
+	}
+
+	if instance != nil {
+		storageInstance = instance
+
+	}
+
+	return instance
 }
 
-func _injectorHasher(config *configuration.Configuration) storage.Hasher {
+func GetHasher(config *configuration.Configuration) storage.Hasher {
 	salt := HasherSalt(config.Authentication.Hasher.Salt)
 
 	switch config.Authentication.Hasher.Type {
@@ -42,8 +55,8 @@ func GetUsernamePasswordAuthentication(
 ) *UsernamePasswordAuthentication {
 	wire.Build(
 		NewUsernamePasswordAuthentication,
-		_injectorHasher,
-		_injectorStorage,
+		GetStorage,
+		GetHasher,
 	)
 
 	return &UsernamePasswordAuthentication{}

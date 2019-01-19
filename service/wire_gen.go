@@ -13,28 +13,42 @@ import (
 // Injectors from wire.go:
 
 func GetUsernamePasswordAuthentication(config *configuration.Configuration) *UsernamePasswordAuthentication {
-	hasher := _injectorHasher(config)
-	storage := _injectorStorage(config, hasher)
+	hasher := GetHasher(config)
+	storage := GetStorage(config, hasher)
 	usernamePasswordAuthentication := NewUsernamePasswordAuthentication(storage, hasher)
 	return usernamePasswordAuthentication
 }
 
 // wire.go:
 
-func _injectorStorage(
+var storageInstance *storage.Storage
+
+func GetStorage(
 	config *configuration.Configuration,
 	hasher storage.Hasher,
 ) *storage.Storage {
-	switch config.Authentication.Store.Type {
-	case "memory":
-	default:
-		return NewMemoryStorage(hasher)
+	if storageInstance != nil {
+		return storageInstance
 	}
 
-	return NewMemoryStorage(hasher)
+	var instance *storage.Storage
+
+	switch config.Authentication.Store.Type {
+	case "memory":
+		instance = NewMemoryStorage(hasher)
+	default:
+		instance = NewMemoryStorage(hasher)
+	}
+
+	if instance != nil {
+		storageInstance = instance
+
+	}
+
+	return instance
 }
 
-func _injectorHasher(config *configuration.Configuration) storage.Hasher {
+func GetHasher(config *configuration.Configuration) storage.Hasher {
 	salt := HasherSalt(config.Authentication.Hasher.Salt)
 
 	switch config.Authentication.Hasher.Type {

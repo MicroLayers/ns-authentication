@@ -28,16 +28,9 @@ func (h *UsernamePasswordProtoHandler) HandleAuthenticationRequest(
 	response *messages.ResponseWrapper,
 ) {
 	var payload messages.UsernamePasswordLoginRequestPayload
-	err := proto.Unmarshal(wrapper.GetPayload(), &payload)
-
+	err := unmarshalPayloadOrError(response, wrapper, &payload)
 	if err != nil {
-		logAndDecorateNegativeResponse(
-			response,
-			ErrorPayloadUnmarshalCode,
-			ErrorPayloadUnmarshalMessage,
-			err,
-		)
-
+		// Error handled in previous function
 		return
 	}
 
@@ -92,16 +85,9 @@ func (h *UsernamePasswordProtoHandler) HandleAddUserRequest(
 	response *messages.ResponseWrapper,
 ) {
 	var payload messages.UsernamePasswordAddUserRequestPayload
-	err := proto.Unmarshal(wrapper.GetPayload(), &payload)
-
+	err := unmarshalPayloadOrError(response, wrapper, &payload)
 	if err != nil {
-		logAndDecorateNegativeResponse(
-			response,
-			ErrorPayloadUnmarshalCode,
-			ErrorPayloadUnmarshalMessage,
-			err,
-		)
-
+		// Error handled in previous function
 		return
 	}
 

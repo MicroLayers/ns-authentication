@@ -8,6 +8,7 @@ package handler
 import (
 	"ns-auth/configuration"
 	"ns-auth/service"
+	"ns-auth/storage"
 )
 
 // Injectors from wire.go:
@@ -15,6 +16,17 @@ import (
 func GetProtoHandler(config *configuration.Configuration) *ProtoHandler {
 	usernamePasswordAuthentication := service.GetUsernamePasswordAuthentication(config)
 	usernamePasswordProtoHandler := NewUsernamePasswordProtoHandler(usernamePasswordAuthentication)
-	protoHandler := NewProtoHandler(usernamePasswordProtoHandler)
+	hasher := service.GetHasher(config)
+	storage := service.GetStorage(config, hasher)
+	tokenStorage := _tokenStorageInjector(storage)
+	tokenProtoHandler := NewTokenProtoHandler(tokenStorage)
+	protoHandler := NewProtoHandler(usernamePasswordProtoHandler, tokenProtoHandler)
 	return protoHandler
+}
+
+// wire.go:
+
+func _tokenStorageInjector(storage2 *storage.Storage,
+) storage.TokenStorage {
+	return storage2.Token
 }

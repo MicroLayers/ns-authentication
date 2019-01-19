@@ -35,3 +35,9 @@ const ErrorUnableToCreateNewUserCode = uint32(3005)
 
 // ErrorUnableToCreateNewUserMessage unable to create a new user
 const ErrorUnableToCreateNewUserMessage = "Unable to create a new user"
+
+// ErrorUnableToFindUserFromTokenAndDomainCode unable to find a user for the given token and domain
+const ErrorUnableToFindUserFromTokenAndDomainCode = uint32(3006)
+
+// ErrorUnableToFindUserFromTokenAndDomainMessage unable to find a user for the given token and domain
+const ErrorUnableToFindUserFromTokenAndDomainMessage = "Unable to find a user for the given token and domain"
