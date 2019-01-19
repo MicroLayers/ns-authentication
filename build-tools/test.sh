@@ -48,7 +48,7 @@ function runTests {
 		--tty \
 		--volume "${current_directory}/..":"/app" \
 		"${docker_runner_image}" \
-		bash -c "cd /app && go test ./..."
+		bash -c "cd /app && go test -parallel $(cat /proc/cpuinfo | grep -c processor) ./..."
 }
 
 checkDocker
