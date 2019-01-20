@@ -19,8 +19,7 @@ steps:
       - cd /usr/local                       # install gometalinter
       - wget -O - https://git.io/vp6lP | sh # (continues)
       - cd /drone/src
-      - find / -name gofmt 2>/dev/null
-      - PATH=$PATH:/usr/local/go/bin /drone/src/bin/gometalinter ./... # run gometalinter
+      - PATH=$PATH:/usr/local/go/bin gometalinter ./... # run gometalinter
 
 volumes:
   - name: gocache
