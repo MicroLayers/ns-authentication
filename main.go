@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 
@@ -37,4 +40,10 @@ func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {
 	m.protoHandler = handler.GetProtoHandler(&m.configuration)
 }
 
+func main() {
+	fmt.Println("This is a plugin, it will now exit")
+	os.Exit(1)
+}
+
+// nolint: deadcode
 var NetServerModule AuthenticationModule

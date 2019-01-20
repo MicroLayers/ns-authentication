@@ -1,0 +1,27 @@
+kind: pipeline
+name: default
+
+steps:
+  - name: linting
+    image: microlayers/golang-with-extras:1.11.3-alpine3.8
+    volumes:
+      - name: gocache
+        path: /gocache
+    environment:
+      GOPATH: /go/
+    commands:
+      - ln -s /gocache /go/                 # link the go's cache volume to GOPATH
+      - mkdir -p /go/src                    # create the GOPATH's src folder
+      - mkdir -p /go/pkg                    # create the GOPATH's pkg folder
+      - ln -s /drone/src /go/src/ns-auth    # hack to let gometalinter work
+      - GO111MODULE=on go mod download      # download the plugin's dependencies
+      - go get -t ./...                     # download the plugin's dependencies (for gometalinter)
+      - cd /usr/local                       # install gometalinter
+      - wget -O - https://git.io/vp6lP | sh # (continues)
+      - cd /drone/src
+      - find / -name gofmt 2>/dev/null
+      - PATH=$PATH:/usr/local/go/bin /drone/src/bin/gometalinter ./... # run gometalinter
+
+volumes:
+  - name: gocache
+    temp: {}
