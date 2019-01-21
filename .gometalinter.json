@@ -10,6 +10,6 @@
   "Exclude": [
     "messages/*",
     "wire_gen.go",
-    "../"
+    "../../"
   ]
 }

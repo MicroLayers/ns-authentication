@@ -4,6 +4,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Configuration the plugin's configuration
 type Configuration struct {
 	Authentication struct {
 		Hasher struct {
@@ -23,6 +24,7 @@ type Configuration struct {
 	} `yaml:"authentication"`
 }
 
+// ReadConfiguration read the configuration, starting from a raw YML configuration
 func ReadConfiguration(rawConfig yaml.MapSlice) (Configuration, error) {
 	var config Configuration
 

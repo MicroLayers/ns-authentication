@@ -7,8 +7,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// RequestTypeTokenDiscover                  request type token details
 const RequestTypeTokenDiscover string = "TokenDiscover"
+
+// RequestTypeUsernamePasswordAuthentication request type username/password authentication
 const RequestTypeUsernamePasswordAuthentication string = "UsernamePasswordAuthentication"
+
+// RequestTypeUsernamePasswordAddUser        request type username/password user add
 const RequestTypeUsernamePasswordAddUser string = "UsernamePasswordAddUser"
 
 // ProtoHandler Protobuf handler

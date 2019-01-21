@@ -11,7 +11,7 @@ import (
 	"ns-auth/handler"
 )
 
-type AuthenticationModule struct {
+type authenticationModule struct {
 	configuration configuration.Configuration
 	protoHandler  *handler.ProtoHandler
 }
@@ -21,15 +21,15 @@ func echo(data []byte) []byte {
 	return data
 }
 
-func (m *AuthenticationModule) HandleJSON(data []byte) []byte {
+func (m *authenticationModule) HandleJSON(data []byte) []byte {
 	return echo(data)
 }
 
-func (m *AuthenticationModule) HandleProto(data []byte) []byte {
+func (m *authenticationModule) HandleProto(data []byte) []byte {
 	return m.protoHandler.HandleRequest(data)
 }
 
-func (m *AuthenticationModule) Init(rawConfig yaml.MapSlice) {
+func (m *authenticationModule) Init(rawConfig yaml.MapSlice) {
 	config, err := configuration.ReadConfiguration(rawConfig)
 
 	if err != nil {
@@ -45,5 +45,6 @@ func main() {
 	os.Exit(1)
 }
 
+// NetServerModule the plugin's export
 // nolint: deadcode
-var NetServerModule AuthenticationModule
+var NetServerModule authenticationModule

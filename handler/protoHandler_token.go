@@ -8,10 +8,12 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
+// TokenProtoHandler proto handler for token requests
 type TokenProtoHandler struct {
 	tokenStorage storage.TokenStorage
 }
 
+// NewTokenProtoHandler TokenProtoHandler's initializer
 func NewTokenProtoHandler(tokenStorage storage.TokenStorage) *TokenProtoHandler {
 	return &TokenProtoHandler{
 		tokenStorage: tokenStorage,
