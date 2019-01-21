@@ -2,8 +2,23 @@ kind: pipeline
 name: default
 
 steps:
+  - name: deps download
+    image: microlayers/golang-with-extras:1.11.4-alpine3.8
+    volumes:
+      - name: gocache
+        path: /gocache
+    environment:
+      GOPATH: /go/
+    commands:
+      - ln -s /gocache /go/             # link the go's cache volume to GOPATH
+      - mkdir -p /go/src
+      - mkdir -p /go/pkg
+      - ln -s /drone/src /go/src/ns-auth
+      - GO111MODULE=on go mod download  # download the mod dependencies
+      - cd /go/src/ns-auth
+      - GO111MODULE=off go get -t ./... # download the dependencies (for gometalinter)
   - name: linting
-    image: microlayers/golang-with-extras:1.11.3-alpine3.8
+    image: microlayers/golang-with-extras:1.11.4-alpine3.8
     volumes:
       - name: gocache
         path: /gocache
@@ -11,15 +26,8 @@ steps:
       GOPATH: /go/
     commands:
       - ln -s /gocache /go/                 # link the go's cache volume to GOPATH
-      - mkdir -p /go/src                    # create the GOPATH's src folder
-      - mkdir -p /go/pkg                    # create the GOPATH's pkg folder
-      - ln -s /drone/src /go/src/ns-auth    # hack to let gometalinter work
-      - GO111MODULE=on go mod download      # download the plugin's dependencies
-      - go get -t ./...                     # download the plugin's dependencies (for gometalinter)
-      - cd /usr/local                       # install gometalinter
-      - wget -O - https://git.io/vp6lP | sh # (continues)
-      - cd /drone/src
-      - PATH=$PATH:/usr/local/go/bin gometalinter ./... # run gometalinter
+      - ln -s /drone/src /go/src/ns-auth    # hack to let gometalinter work (thinking it's not a module)
+      - gometalinter ./...                  # run gometalinter
 
 volumes:
   - name: gocache
