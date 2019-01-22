@@ -3,7 +3,7 @@ name: default
 
 steps:
   - name: deps download
-    image: microlayers/golang-with-extras:1.11.4-alpine3.8
+    image: microlayers/golang-with-extras:1.11.4-stretch
     volumes:
       - name: gocache
         path: /go
@@ -18,7 +18,7 @@ steps:
       - GO111MODULE=off go get -t ./...  # download the dependencies (for gometalinter)
   - name: linting
     depends_on: ['deps download']
-    image: microlayers/golang-with-extras:1.11.4-alpine3.8
+    image: microlayers/golang-with-extras:1.11.4-stretch
     detach: true
     volumes:
       - name: gocache
@@ -29,8 +29,7 @@ steps:
     commands:
       - gometalinter --deadline=5m ./... # run gometalinter
   - name: testing
-    image: microlayers/golang-with-extras:1.11.4-alpine3.8
-    detach: true
+    image: microlayers/golang-with-extras:1.11.4-stretch
     depends_on: ['deps download']
     volumes:
       - name: gocache
@@ -38,7 +37,7 @@ steps:
     environment:
       GO111MODULE: on
     commands:
-      - go test -parallel $(cat /proc/cpuinfo | grep -c processor) -covermode atomic -coverprofile /go/coverage.txt ./...
+      - go test -covermode atomic -coverprofile /go/coverage.txt ./...
   - name: codecov
     image: plugins/codecov
     depends_on: ['testing']
