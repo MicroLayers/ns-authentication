@@ -18,13 +18,36 @@ steps:
       - GO111MODULE=off go get -t ./...  # download the dependencies (for gometalinter)
   - name: linting
     image: microlayers/golang-with-extras:1.11.4-alpine3.8
+    detach: true
     volumes:
       - name: gocache
         path: /go
     environment:
       GOPATH: /go/
+      GO111MODULE: off
     commands:
-      - GO111MODULE=off gometalinter --deadline=5m ./... # run gometalinter
+      - gometalinter --deadline=5m ./... # run gometalinter
+  - name: testing
+    image: microlayers/golang-with-extras:1.11.4-alpine3.8
+    detach: true
+    volumes:
+      - name: gocache
+        path: /go
+    environment:
+      GO111MODULE: on
+    commands:
+      - go test -parallel $(cat /proc/cpuinfo | grep -c processor) -covermode atomic -coverprofile /go/coverage.txt ./...
+  - name: codecov
+    image: plugins/codecov
+    depends_on: [testing]
+    volumes:
+      - name: gocache
+        path: /go
+    settings:
+      token:
+        from_secret: CODECOV_TOKEN
+      paths: /go
+      files: coverage.txt
 
 volumes:
   - name: gocache
