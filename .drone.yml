@@ -6,28 +6,25 @@ steps:
     image: microlayers/golang-with-extras:1.11.4-alpine3.8
     volumes:
       - name: gocache
-        path: /gocache
+        path: /go
     environment:
       GOPATH: /go/
     commands:
-      - ln -s /gocache /go/             # link the go's cache volume to GOPATH
       - mkdir -p /go/src
       - mkdir -p /go/pkg
-      - ln -s /drone/src /go/src/ns-auth
-      - GO111MODULE=on go mod download  # download the mod dependencies
+      - ln -s /drone/src /go/src/ns-auth # link the sources to $GOPATH/src (gometalinter hack)
+      - GO111MODULE=on go mod download   # download the mod dependencies
       - cd /go/src/ns-auth
-      - GO111MODULE=off go get -t ./... # download the dependencies (for gometalinter)
+      - GO111MODULE=off go get -t ./...  # download the dependencies (for gometalinter)
   - name: linting
     image: microlayers/golang-with-extras:1.11.4-alpine3.8
     volumes:
       - name: gocache
-        path: /gocache
+        path: /go
     environment:
       GOPATH: /go/
     commands:
-      - ln -s /gocache /go/                 # link the go's cache volume to GOPATH
-      - ln -s /drone/src /go/src/ns-auth    # hack to let gometalinter work (thinking it's not a module)
-      - gometalinter ./...                  # run gometalinter
+      - GO111MODULE=off gometalinter --deadline=5m ./... # run gometalinter
 
 volumes:
   - name: gocache
