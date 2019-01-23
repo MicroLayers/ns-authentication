@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"ns-auth/storage"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,25 +22,30 @@ type userDefinitionList []userDefinition
 type usernamePasswordMemoryStorage struct {
 	hasher storage.Hasher
 	store  *userDefinitionList
+	mutex  *sync.RWMutex
 }
 
 type tokenMemoryStorage struct {
 	hasher storage.Hasher
 	store  *userDefinitionList
+	mutex  *sync.RWMutex
 }
 
 // NewMemoryStorage MemoryStorage's instantiator, used by wire
 func NewMemoryStorage(hasher storage.Hasher) *storage.Storage {
 	commonStore := &userDefinitionList{}
+	commonMutex := &sync.RWMutex{}
 
 	usernamePasswordStore := &usernamePasswordMemoryStorage{
 		hasher: hasher,
 		store:  commonStore,
+		mutex:  commonMutex,
 	}
 
 	tokenStore := &tokenMemoryStorage{
 		hasher: hasher,
 		store:  commonStore,
+		mutex:  commonMutex,
 	}
 
 	return &storage.Storage{
@@ -53,11 +59,15 @@ func (s *usernamePasswordMemoryStorage) AddUser(
 	domain string,
 	password string,
 ) (*storage.User, error) {
+	s.mutex.RLock()
 	for _, definition := range *s.store {
 		if s.hasher.CheckPassword(username, domain, password, definition.HashedPassword) {
+			s.mutex.RUnlock()
+
 			return definition.User, nil
 		}
 	}
+	s.mutex.RUnlock()
 
 	expiryDate := time.Now().Add(time.Hour).Unix() // One hour expiration
 
@@ -74,7 +84,10 @@ func (s *usernamePasswordMemoryStorage) AddUser(
 			ExpiryDate:   expiryDate,
 		},
 	}
+
+	s.mutex.Lock()
 	*s.store = append(*s.store, newDef)
+	s.mutex.Unlock()
 
 	return newDef.User, nil
 }
@@ -84,11 +97,15 @@ func (s *usernamePasswordMemoryStorage) FindUser(
 	domain string,
 	password string,
 ) (*storage.User, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
 	nowEpoch := time.Now().Unix()
 
 	for _, definition := range *s.store {
 		if s.hasher.CheckPassword(username, domain, password, definition.HashedPassword) &&
 			nowEpoch <= definition.AuthToken.ExpiryDate {
+
 			return definition.User, nil
 		}
 	}
@@ -100,6 +117,9 @@ func (s *tokenMemoryStorage) FindOrCreateTokenFromUser(
 	user *storage.User,
 	authType string,
 ) (*storage.AuthToken, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
 	// ignore authType for this storage type
 	for _, definition := range *s.store {
 		if definition.User.ID == user.ID {
@@ -114,8 +134,12 @@ func (s *tokenMemoryStorage) FindOrCreateTokenFromUser(
 }
 
 func (s *tokenMemoryStorage) FindUserFromToken(token string) (*storage.User, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
 	for _, definition := range *s.store {
 		if definition.AuthToken.Token == token {
+
 			return definition.User, nil
 		}
 	}
