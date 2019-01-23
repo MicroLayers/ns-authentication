@@ -22,29 +22,30 @@ type userDefinitionList []userDefinition
 type usernamePasswordMemoryStorage struct {
 	hasher storage.Hasher
 	store  *userDefinitionList
-	mutex  sync.RWMutex
+	mutex  *sync.RWMutex
 }
 
 type tokenMemoryStorage struct {
 	hasher storage.Hasher
 	store  *userDefinitionList
-	mutex  sync.RWMutex
+	mutex  *sync.RWMutex
 }
 
 // NewMemoryStorage MemoryStorage's instantiator, used by wire
 func NewMemoryStorage(hasher storage.Hasher) *storage.Storage {
 	commonStore := &userDefinitionList{}
+	commonMutex := &sync.RWMutex{}
 
 	usernamePasswordStore := &usernamePasswordMemoryStorage{
 		hasher: hasher,
 		store:  commonStore,
-		mutex:  sync.RWMutex{},
+		mutex:  commonMutex,
 	}
 
 	tokenStore := &tokenMemoryStorage{
 		hasher: hasher,
 		store:  commonStore,
-		mutex:  sync.RWMutex{},
+		mutex:  commonMutex,
 	}
 
 	return &storage.Storage{
