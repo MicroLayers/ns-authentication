@@ -19,7 +19,6 @@ steps:
   - name: linting
     depends_on: ['deps download']
     image: microlayers/golang-with-extras:1.11.4-stretch
-    detach: true
     volumes:
       - name: gocache
         path: /go
@@ -37,7 +36,7 @@ steps:
     environment:
       GO111MODULE: on
     commands:
-      - go test -covermode atomic -coverprofile /go/coverage.txt ./...
+      - go test -race -covermode atomic -parallel $(cat /proc/cpuinfo | grep -c processor) -coverprofile /go/coverage.txt ./...
   - name: codecov
     image: plugins/codecov
     depends_on: ['testing']
